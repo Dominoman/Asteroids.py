@@ -35,8 +35,10 @@ class Sprite:
         frame_width = image.get_width() / frame_count
         frame_height = image.get_height()
         self.frames = []
-        for i in range(frame_count):
-            self.frames.append(Rect(i * frame_width, 0, frame_width, frame_height))
+        self.frames.extend(
+            Rect(i * frame_width, 0, frame_width, frame_height)
+            for i in range(frame_count)
+        )
         self._current_frame = 0
         self._rotate = 0
         self.velocity = Vector2(0, 0)
@@ -210,7 +212,7 @@ class AsteroidManager(Manager):
         self.objects.append(Asteroid(self.image, position, vel, rot, scale))
 
     def add_asteroids(self, num: int) -> None:
-        for i in range(num):
+        for _ in range(num):
             self.add_asteroid(1)
 
 
@@ -250,12 +252,13 @@ class SoundManager:
     def play_thrust(self) -> None:
         if not self.playthrust:
             self.thrust.play(-1)
-            self.playthrust=True
+            self.playthrust = True
 
     def stop_thrust(self) -> None:
         if self.playthrust:
             self.thrust.stop()
-            self.playthrust=False
+            self.playthrust = False
+
 
 class Game:
     WIDTH = 800
@@ -353,8 +356,11 @@ class Game:
         self.shot_manager.draw(surface)
         self.asteroid_manager.draw(surface)
         self.explosion_manager.draw(surface)
-        text = self.font.render("Lives:" + str(self.lives) + " Level:" + str(self.level) + " Score:" + str(self.score),
-                                True, (255, 255, 255))
+        text = self.font.render(
+            f"Lives:{str(self.lives)} Level:{str(self.level)} Score:{str(self.score)}",
+            True,
+            (255, 255, 255),
+        )
         text_rect = text.get_rect()
         text_rect.x = 10
         text_rect.y = 10
@@ -369,10 +375,7 @@ class Game:
                     self.explosion_manager.add_explosion(asteroid.position)
                     self.score += 1000
                     if asteroid.scale > 0.5:
-                        if asteroid.scale == 1:
-                            scale = 0.75
-                        else:
-                            scale = 0.5
+                        scale = 0.75 if asteroid.scale == 1 else 0.5
                         self.asteroid_manager.add_asteroid(scale, asteroid.position)
                         self.asteroid_manager.add_asteroid(scale, asteroid.position)
             if not asteroid.is_dead and not self.ship.is_dead and self.ship.is_circle_collide(asteroid):
@@ -396,5 +399,6 @@ class Game:
         self.game_state = Game.GAME_PLAY
 
 
-game = Game()
-game.run()
+if __name__ == "__main__":
+    game = Game()
+    game.run()
